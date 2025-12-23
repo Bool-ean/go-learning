@@ -1,6 +1,5 @@
 // code from: https://www.youtube.com/watch?v=JuUAEYLkGbM
 // copying/messing around with it for learning purposes
-//left off the vid at 16:14
 package main
 
 import (
@@ -8,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"sync"
+	"time"
 
 	"golang.org/x/net/websocket"
 )
@@ -23,6 +23,20 @@ type Server struct {
 func NewServer() *Server {
 	return &Server{
 		conns: make(map[*websocket.Conn]bool),
+	}
+}
+
+
+//websocket subscription feed
+//people can subscribe and receive orderbook data
+//dummy func, can fill in logic with real world data for datafeed
+func (s *Server) handleWSOrderbook(ws *websocket.Conn){
+	fmt.Println("new incoming connection from client to orderbook feed:", ws.RemoteAddr())
+
+	for {
+		payload := fmt.Sprintf("orderbook data -> %d\n", time.Now().UnixNano())
+		ws.Write([]byte(payload))
+		time.Sleep(time.Second * 2)
 	}
 }
 
@@ -84,5 +98,6 @@ func (s *Server) broadcast(b []byte){
 func main() {
 	server := NewServer()
 	http.Handle("/ws", websocket.Handler(server.handleWS))
+	http.Handle("/orderbookfeed", websocket.Handler(server.handleWSOrderbook))
 	http.ListenAndServe(":3000", nil)
 }
