@@ -1,6 +1,6 @@
 // code from: https://www.youtube.com/watch?v=JuUAEYLkGbM
 // copying/messing around with it for learning purposes
-//left off the vid at 10:58
+//left off the vid at 16:14
 package main
 
 import (
@@ -11,6 +11,7 @@ import (
 
 	"golang.org/x/net/websocket"
 )
+
 type Server struct {
 	//map of websocket connections so we can keep track of connections to server
 	conns map[*websocket.Conn]bool
@@ -58,10 +59,27 @@ func (s *Server) readLoop(ws *websocket.Conn){
 		}
 		//only reading what was written
 		msg := buf[:n]
-		fmt.Println(string(msg))
-		ws.Write([]byte("thank you for the message"))
+		//broadcast to call connections	
+		s.broadcast(msg)
+
+		//write to just single connection
+		//fmt.Println(string(msg))
+		//ws.Write([]byte("thank you for the message"))
 	}
 }
+
+//loop through the connections and send message to all of them
+//TODO: add logic to broadcast to all connections exception the one that sent it
+func (s *Server) broadcast(b []byte){
+	for ws := range s.conns{
+		go func(ws *websocket.Conn){
+			if _, err := ws.Write(b); err != nil{
+				fmt.Println("Write error: ", err)
+			}
+		}(ws)
+	}	
+}
+
 
 func main() {
 	server := NewServer()
