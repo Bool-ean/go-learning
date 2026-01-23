@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
+    integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/htmx-ext-ws@2.0.4"
+    integrity="sha384-1RwI/nvUSrMRuNj7hX1+27J8XDdCoSLf0EjEyF69nacuWyiJYoQ/j39RT1mSnd2G"
+    crossorigin="anonymous"></script>
+  <title>Boolean's Hardware Monitor</title>
+</head>
+
+<body>
+  <h1>Boolean's Hardware Monitor</h1>
+  <div hx-ext="ws" ws-connect="ws://localhost:8080/ws">
+    <div id="update-timestamp">Loading Data</div>
+    <div id="monitor-data">
+      <div id="system-data"></div>
+      <div id="disk-data"></div>
+      <div id="cpu-data"></div>
+    </div>
+  </div>
+</body>
+
+</html>

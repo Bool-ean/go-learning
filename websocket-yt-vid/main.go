@@ -1,5 +1,6 @@
 // code from: https://www.youtube.com/watch?v=JuUAEYLkGbM
 // copying/messing around with it for learning purposes
+// TODO: change ListenAndServe to only liston on local host so i am safe on public networks
 package main
 
 import (
@@ -26,11 +27,10 @@ func NewServer() *Server {
 	}
 }
 
-
-//websocket subscription feed
-//people can subscribe and receive orderbook data
-//dummy func, can fill in logic with real world data for datafeed
-func (s *Server) handleWSOrderbook(ws *websocket.Conn){
+// websocket subscription feed
+// people can subscribe and receive orderbook data
+// dummy func, can fill in logic with real world data for datafeed
+func (s *Server) handleWSOrderbook(ws *websocket.Conn) {
 	fmt.Println("new incoming connection from client to orderbook feed:", ws.RemoteAddr())
 
 	for {
@@ -40,7 +40,7 @@ func (s *Server) handleWSOrderbook(ws *websocket.Conn){
 	}
 }
 
-func (s *Server) handleWS(ws *websocket.Conn){
+func (s *Server) handleWS(ws *websocket.Conn) {
 
 	defer func() {
 		s.mu.Lock()
@@ -58,13 +58,13 @@ func (s *Server) handleWS(ws *websocket.Conn){
 	s.readLoop(ws)
 }
 
-func (s *Server) readLoop(ws *websocket.Conn){
-	
+func (s *Server) readLoop(ws *websocket.Conn) {
+
 	buf := make([]byte, 1024)
-	for{
+	for {
 		n, err := ws.Read(buf)
 		if err != nil {
-			if err == io.EOF{
+			if err == io.EOF {
 				break
 			}
 			fmt.Println("Read error:", err)
@@ -73,7 +73,7 @@ func (s *Server) readLoop(ws *websocket.Conn){
 		}
 		//only reading what was written
 		msg := buf[:n]
-		//broadcast to call connections	
+		//broadcast to call connections
 		s.broadcast(msg)
 
 		//write to just single connection
@@ -82,18 +82,17 @@ func (s *Server) readLoop(ws *websocket.Conn){
 	}
 }
 
-//loop through the connections and send message to all of them
-//TODO: add logic to broadcast to all connections exception the one that sent it
-func (s *Server) broadcast(b []byte){
-	for ws := range s.conns{
-		go func(ws *websocket.Conn){
-			if _, err := ws.Write(b); err != nil{
+// loop through the connections and send message to all of them
+// TODO: add logic to broadcast to all connections exception the one that sent it
+func (s *Server) broadcast(b []byte) {
+	for ws := range s.conns {
+		go func(ws *websocket.Conn) {
+			if _, err := ws.Write(b); err != nil {
 				fmt.Println("Write error: ", err)
 			}
 		}(ws)
-	}	
+	}
 }
-
 
 func main() {
 	server := NewServer()
