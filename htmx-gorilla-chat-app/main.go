@@ -26,6 +26,9 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 func main() {
 	//handing index request
 	http.HandleFunc("/", serveIndex)
+
+	hub := NewHub()
+	go hub.Run()
 	//handing websocket request
 	//serveWs defined in client.go
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {

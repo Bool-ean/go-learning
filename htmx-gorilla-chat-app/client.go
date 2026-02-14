@@ -19,6 +19,10 @@ type Client struct {
 }
 
 const (
+	// time allowed to write the message to the peer
+	writeWait = 10 * time.Second
+	// Sends pings to peer with this period. Must be less than pongWait.
+	pingPeriod = (pongWait * 9) / 10
 	// time allowed to read the next pong message from the peer.
 	pongWait = 60 * time.Second
 	// max mesage size allower from peer
@@ -94,5 +98,41 @@ func (c *Client) readPump() {
 
 // writes messages to the websocket connection
 func (c *Client) writePump() {
+	ticker := time.NewTicker(pingPeriod)
+	defer func() {
+		c.conn.Close()
+	}()
+
+	for {
+		select {
+		case msg, ok := <-c.send:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			// if not ok, sending an empty message to client. Probably hub is shut down
+			if !ok {
+				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			w, err := c.conn.NextWriter(websocket.TextMessage)
+			if err != nil {
+				return
+			}
+
+			w.Write(msg) //TODO: test without this line, I think it's redundant
+			for i := 0; i < len(c.send); i++ {
+				w.Write(msg)
+			}
+
+			if err := w.Close(); err != nil {
+				return
+			}
+
+		case <-ticker.C:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+		}
+	}
 
 }
