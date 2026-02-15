@@ -1,0 +1,11 @@
+# Binary builds
+htmx-gorilla-chat-app
+chatapp
+main
+
+# Go test binary
+*.test
+
+# Coverage
+*.out
+
