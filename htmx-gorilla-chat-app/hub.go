@@ -44,8 +44,12 @@ func (h *Hub) Run() {
 			//TODO: add mutex to make it thread safe
 			//h.Lock()
 			h.clients[client] = true
-
 			log.Printf("client registered %s", client.id)
+			//adding logic to give client chat history
+			for i := 0; i < len(h.messages); i++ {
+				client.send <- getMessageTemplate(h.messages[i])
+			}
+
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				log.Printf("client unregistered %s", client.id)

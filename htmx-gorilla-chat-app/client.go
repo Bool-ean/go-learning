@@ -119,6 +119,8 @@ func (c *Client) writePump() {
 			}
 
 			w.Write(msg) //TODO: test without this line, I think it's redundant
+			//TODO fix this loop to loop through c.send and write  value of c.send
+			//Add variable for holding new line, make sure to write new line also
 			for i := 0; i < len(c.send); i++ {
 				w.Write(msg)
 			}
