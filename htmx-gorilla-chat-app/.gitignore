@@ -8,4 +8,5 @@ main
 
 # Coverage
 *.out
-
+*.zip
+SUMMARY.md
