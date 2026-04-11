@@ -38,16 +38,22 @@ func NewHub() *Hub {
 }
 
 func (h *Hub) Run() {
+	//parsing template once, instead of every message
+	tmpl, err := parseTemplate()
+	if err != nil {
+		log.Fatalf("template parsing: %s", err)
+	}
+
 	for {
 		select {
 		case client := <-h.register:
-			//TODO: add mutex to make it thread safe
-			//h.Lock()
+			// TODO: add mutex to make it thread safe
+			// h.Lock()
 			h.clients[client] = true
 			log.Printf("client registered %s", client.id)
-			//adding logic to give client chat history
+			// adding logic to give client chat history
 			for i := 0; i < len(h.messages); i++ {
-				client.send <- getMessageTemplate(h.messages[i])
+				client.send <- getMessageTemplate(h.messages[i], tmpl)
 			}
 
 		case client := <-h.unregister:
@@ -61,7 +67,7 @@ func (h *Hub) Run() {
 
 			for client := range h.clients {
 				select {
-				case client.send <- getMessageTemplate(msg):
+				case client.send <- getMessageTemplate(msg, tmpl):
 				default:
 					close(client.send)
 					delete(h.clients, client)
@@ -71,14 +77,17 @@ func (h *Hub) Run() {
 	}
 }
 
-func getMessageTemplate(msg *Message) []byte {
+func parseTemplate() (*template.Template, error) {
 	tmpl, err := template.ParseFiles("templates/message.html")
 	if err != nil {
 		log.Fatalf("template parsing: %s", err)
 	}
+	return tmpl, err
+}
 
+func getMessageTemplate(msg *Message, tmpl *template.Template) []byte {
 	var renderedMessage bytes.Buffer
-	err = tmpl.Execute(&renderedMessage, msg)
+	err := tmpl.Execute(&renderedMessage, msg)
 	if err != nil {
 		log.Fatalf("template parsing: %s", err)
 	}
