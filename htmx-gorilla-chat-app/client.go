@@ -12,6 +12,8 @@ import (
 )
 
 type Client struct {
+	un string
+	pw string
 	id   string
 	hub  *Hub
 	conn *websocket.Conn
