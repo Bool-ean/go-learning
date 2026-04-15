@@ -94,3 +94,12 @@ func getMessageTemplate(msg *Message, tmpl *template.Template) []byte {
 
 	return renderedMessage.Bytes()
 }
+
+func (h *Hub) UsernameTaken(un string) bool{
+	for c := range h.clients{
+		if (c.un == un){
+			return true
+		}
+	}
+	return false
+}
